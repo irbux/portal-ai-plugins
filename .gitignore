@@ -1,9 +1,9 @@
-# Local coding-agent artifacts
+Codex/
+.shunt/
+__pycache__/
+*.py[cod]
+.venv/
+.DS_Store
 .claude/
 CLAUDE.local.md
-
-# IDEs
 .idea/
-
-# macOS
-.DS_Store

@@ -1,0 +1,11 @@
+Shunt Local
+
+Derived from Spotify portal-ai-plugins, specifically plugins/shunt.
+Upstream: https://github.com/spotify/portal-ai-plugins
+Base commit: 3c24ca30ff63e1f5bbad1c43fe5324daff579123
+Original work Copyright Spotify AB, licensed under Apache License 2.0.
+
+This fork replaces the Portal/AiKA transport and routing implementation, removes
+Portal-specific catalog workflows and branding, and adds subscription CLI worker
+configuration, bounded output, caching, guarded file writes, and Codex packaging.
+This is an independent adaptation, not an official Spotify product.

@@ -1,0 +1,34 @@
+{
+  "name": "shunt",
+  "version": "0.3.0",
+  "description": "Delegate large reads and file generation to local Claude Code or Codex subscription workers.",
+  "author": {
+    "name": "Shunt contributors"
+  },
+  "license": "Apache-2.0",
+  "repository": "https://github.com/irbux/portal-ai-plugins",
+  "keywords": [
+    "bulk-reader",
+    "code-writer",
+    "subscription",
+    "model-routing"
+  ],
+  "skills": "./skills/",
+  "interface": {
+    "displayName": "Shunt Local",
+    "shortDescription": "Large-file summaries and generation with CLI workers",
+    "longDescription": "Keep bulk source and generated files out of the main conversation. Route to the host subscription CLI with configurable worker models and a local summary cache.",
+    "developerName": "Shunt contributors",
+    "category": "Developer Tools",
+    "capabilities": [
+      "Read",
+      "Write",
+      "CLI"
+    ],
+    "defaultPrompt": [
+      "Set up Shunt for this project.",
+      "Use bulk-reader to answer a question about these files.",
+      "Use code-writer to generate a file from existing patterns."
+    ]
+  }
+}

@@ -1,34 +1,24 @@
-# Spotify Portal AI Plugin
+# Shunt Local development
 
-This repository packages Spotify Portal workflows for Claude Code, Codex, and Cursor.
+This repository is an independent fork of Spotify portal-ai-plugins. The installable
+plugin is `plugins/shunt`. Root marketplace files serve Codex and Claude Code.
+The moved `Codex/` directory is a local archive: do not modify it or include it in distributions.
 
-## Repository structure
+Keep the runtime Python 3.10+ standard library only. Workers use the official
+`claude -p` and `codex exec` CLIs with saved subscription authentication. Do not add
+API-key adapters or extract/replay OAuth tokens. Keep host matching as the default;
+provider/model overrides apply to workers only. Keep sandbox and managed policy intact.
 
-- `skills/` contains the canonical Portal workflow instructions.
-- `plugins/shunt/` contains the shunt plugin (Claude Code only for now): scripts, skills, hooks, and evals for routing I/O-heavy work to AiKA modes.
-- `.claude-plugin/`, `.codex-plugin/`, and `.cursor-plugin/` contain host manifests.
-- `assets/` contains shared Portal branding and product imagery.
-- `.claude-plugin/marketplace.json` exposes the repository as a Claude Code marketplace.
+Source payloads and worker logs stay out of the main agent output. Read source
+inside the script, pass prompts on stdin, and return bounded summaries or write
+metadata. File writes require complete structured results and explicit overwrite.
+Do not turn off safety controls or automatically fall back to another provider.
 
-## Design rules
+Doctor is read-only and offline by default. `--auth` checks CLI login; `--probe`
+explicitly invokes a small model request. Hooks are best-effort routing, not a
+security boundary. Cache maintenance only touches hashed summary files.
 
-- Keep the portal plugin at the repository root; additional plugins live under `plugins/<name>/` and are registered in `.claude-plugin/marketplace.json`. Move portal under `plugins/` only together with the other host manifests.
-- Keep the plugin identifier `portal` so Claude Code skills use the `/portal:<workflow>` namespace.
-- Keep `doctor` read-only.
-- Keep each workflow canonical in `skills/`.
-- Do not publish the bundled skills as standalone packages.
-- Do not add release automation unless a tagged GitHub release or another distribution channel is explicitly planned.
-- Preserve JSON output and dry-run safeguards when documenting Portal CLI operations.
-
-## Validation
-
-```bash
-uv run --with pyyaml python \
-  ~/.codex/skills/.system/plugin-creator/scripts/validate_plugin.py \
-  .
-
-claude plugin validate --strict .
-
-# shunt hook + transport evals (no Portal access needed)
-bash plugins/shunt/evals/run.sh
-```
+Run `python3 -m unittest discover -s plugins/shunt/tests -v` and validate plugin and
+skill manifests when changing packaging. Live tests consume subscription allowance;
+use tiny synthetic fixtures and record actual limitations. Preserve LICENSE and NOTICE.
+Do not claim a fixed 90% reduction in total usage; measure returned context separately.
