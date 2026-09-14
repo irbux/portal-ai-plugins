@@ -1,0 +1,23 @@
+---
+name: setup
+description: Configure Shunt subscription workers for local Claude Code or Codex, with host matching and independent reader or writer models.
+---
+
+Resolve the plugin root two levels above this SKILL.md. Work in the user's project.
+Use `python3 "<plugin-root>/scripts/shunt.py" init` if `.shunt.json` is absent.
+Preserve existing configuration. Defaults match the host: Claude uses `haiku`;
+Codex uses `gpt-5.6-luna`. These are worker models; the main agent stays as configured.
+Always pass `--host claude` in Claude Code or `--host codex` in Codex.
+
+Run `doctor --host HOST` to check configuration and the executable without network.
+Use `doctor --host HOST --auth` to verify the existing CLI subscription login.
+Use `doctor --host HOST --probe` when a live check is authorized; it sends no source.
+If authentication is missing, tell the user to run `claude auth login` or `codex login`
+in their terminal. Do not read auth files, request tokens, or configure an API key.
+A denied keychain/network access check may require the host's normal permission flow.
+
+Read `docs/configuration.md` for CLI paths, model overrides, cache and output limits.
+Add `.shunt/` to the project's ignore file if needed. `.shunt.json` contains no credentials
+and may be committed. Hooks need host trust; never bypass trust or approval policies.
+Local desktop coding sessions must have the CLI and its login on the execution host.
+Ordinary web chats cannot run this plugin's local scripts.

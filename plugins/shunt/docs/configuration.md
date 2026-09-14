@@ -1,0 +1,96 @@
+# Configuration
+
+No configuration file is required inside a known host. `init` creates a reviewable
+`.shunt.json` in the project. It never overwrites existing settings or stores secrets.
+Relative file paths resolve from the command's working directory; `--root` changes
+only the allowed project boundary. Source files and targets must stay within that boundary.
+
+```json
+{
+  "provider": "auto",
+  "providers": {
+    "claude": {"model": "haiku", "effort": "low"},
+    "codex": {
+      "model": "gpt-5.6-luna", "effort": "low",
+      "writer": {"model": "gpt-5.6-terra", "effort": "medium"}
+    }
+  },
+  "reader": {"max_output_tokens": 2000},
+  "writer": {"max_output_tokens": 8192},
+  "timeout_seconds": 180,
+  "max_input_bytes": 512000,
+  "min_lines": 350,
+  "enabled": true,
+  "cache": true,
+  "cache_ttl_seconds": 604800,
+  "cache_max_bytes": 33554432
+}
+```
+
+The writer override above is optional; `init` uses the same small model for both workflows.
+Choose your own model when reasoning or code complexity warrants it. There is no fallback
+model or cross-provider retry. Main-agent model settings are never edited.
+
+## Routing precedence
+
+1. `--provider`, then `SHUNT_PROVIDER`, then `.shunt.json` provider, then `auto`.
+2. For `auto`: `--host`, `SHUNT_HOST`, host event identity (in hooks), or process
+   markers (`CLAUDECODE`, then `CODEX_THREAD_ID`). An ambiguous terminal requires a host.
+3. Model/effort: command-line override, workflow env (`SHUNT_READER_MODEL`,
+   `SHUNT_WRITER_MODEL`, or corresponding `_EFFORT`), global `SHUNT_MODEL`/`SHUNT_EFFORT`,
+   provider workflow config, provider config, built-in default.
+
+Prefer provider-scoped config to global model env variables when using both hosts.
+The skills always pass `--host`, so desktop environment differences do not change routing.
+
+Other env options: `SHUNT_CLAUDE_BIN`, `SHUNT_CODEX_BIN` (one executable path, no shell
+arguments), `SHUNT_TIMEOUT_SECONDS`, `SHUNT_MIN_LINES`, `SHUNT_ENABLED=0`, and
+`SHUNT_READER_MAX_OUTPUT_TOKENS`/`SHUNT_WRITER_MAX_OUTPUT_TOKENS`. A provider's `command`
+field can also specify its executable path. PATH and common macOS app locations are searched.
+
+## Subscription authentication
+
+Use the official CLI's login flow. Shunt asks the CLI for status, requires `claude.ai`
+or ChatGPT authentication, and lets that CLI manage credentials and refreshes. It does
+not open auth files or forward OAuth tokens itself. Inherited API keys, bearer overrides,
+provider switches and endpoint overrides are removed from the worker environment.
+Codex also enforces `forced_login_method=chatgpt` and the built-in OpenAI provider.
+No API adapter or automatic API billing fallback exists.
+
+`doctor` is offline. `doctor --auth` checks CLI status. `doctor --probe` checks the reader
+model with a tiny synthetic request using the normal worker adapter. Probe success does
+not verify a separate writer model override. A sandbox may deny keychain or network
+access even when your terminal is logged in; use the host's normal permission flow.
+
+## Budgets and failures
+
+Prepared input, including line numbering and JSON framing, is limited to 512,000 UTF-8
+bytes by default. Reader and writer output budgets guide the worker; Claude also gets
+`CLAUDE_CODE_MAX_OUTPUT_TOKENS`. Codex exec has no equivalent hard output-token flag.
+Both adapters reject visible text longer than six characters per configured token.
+This is an output guard, not an exact tokenizer or billing cap. JSON/CLI overhead also counts.
+
+Timeouts kill the worker process group. Failed exits, malformed JSON, incomplete results,
+refusals and oversized output produce an error without returning code or changing a target.
+Worker stdout/stderr are captured with limits and not printed as raw logs. A generic error
+may require checking login, quota, CLI version, model availability or network access locally.
+There is no automatic source dump into the main conversation after failure.
+
+## Cache lifecycle
+
+`.shunt/cache/<sha256>.json` stores only successful reader text and numeric usage.
+The request hash covers source payload (including content hashes), question, paths/order,
+worker executable, provider, model, effort, output budget, plugin version and instructions.
+Changed inputs miss immediately. Model aliases that change server-side expire with TTL;
+use `--no-cache` when freshness matters. Cache is per project, not shared across checkouts.
+
+Entries expire seven days after creation; reads do not extend their lifetime. A new cache
+write prunes expired entries and then oldest entries to the 32 MiB limit. Idle projects
+retain expired files until `cache prune`, `cache clear`, or a new cache write. No daemon
+runs. Concurrent writes may temporarily exceed the cap until the next prune.
+
+`cache status` reports count/bytes/expiry without printing summaries. `prune` removes
+expired/excess entries; `clear` removes all hashed summaries only. Unrelated files are
+untouched. Files use owner-only permissions. `.shunt/` belongs in `.gitignore`; generated
+summaries may contain snippets or sensitive findings. `--no-cache` bypasses read and write,
+while `"cache": false` disables caching project-wide. No writer outputs are cached.
