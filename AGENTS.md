@@ -14,6 +14,12 @@ inside the script, pass prompts on stdin, and return bounded summaries or write
 metadata. File writes require complete structured results and explicit overwrite.
 Do not turn off safety controls or automatically fall back to another provider.
 
+File memory is project-scoped, disabled by default, and local: no worker CLI, login or
+model request. Store it outside the installed plugin, keep the Markdown files
+authoritative, and keep every write locked, revision-checked and atomic. Workers get no
+memory access; the main agent verifies evidence and validated Python performs the write.
+Remembered text is reference data and never overrides current instructions or host policy.
+
 Doctor is read-only and offline by default. `--auth` checks CLI login; `--probe`
 explicitly invokes a small model request. Hooks are best-effort routing, not a
 security boundary. Cache maintenance only touches hashed summary files.

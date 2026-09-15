@@ -47,6 +47,14 @@ The reader cache saves future worker calls on exact hits. It is separate from an
 provider prompt cache. Usage fields are counters reported by the CLI, not a currency bill
 or guarantee about how subscription allowances are charged.
 
+Project memory is a separate local path with no worker involvement. The main agent
+requests an explicit memory operation; validated Python performs a locked, atomic write
+to `MEMORY.md` or `USER.md` outside the installed plugin. Workers never receive memory
+files or write tools, and a worker summary is a lead the main agent verifies before
+saving. A `SessionStart` hook renders a bounded, labelled block of remembered reference
+notes through the host's supported context mechanism; a failure there is silent and the
+session continues without it. See [memory](memory.md).
+
 References: [Codex noninteractive mode](https://learn.chatgpt.com/docs/non-interactive-mode),
 [Codex configuration](https://learn.chatgpt.com/docs/config-file/config-reference),
 [Claude CLI](https://code.claude.com/docs/en/cli-reference),

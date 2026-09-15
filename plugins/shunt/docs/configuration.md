@@ -23,7 +23,8 @@ only the allowed project boundary. Source files and targets must stay within tha
   "enabled": true,
   "cache": true,
   "cache_ttl_seconds": 604800,
-  "cache_max_bytes": 33554432
+  "cache_max_bytes": 33554432,
+  "memory": {"enabled": false}
 }
 ```
 
@@ -47,6 +48,17 @@ Other env options: `SHUNT_CLAUDE_BIN`, `SHUNT_CODEX_BIN` (one executable path, n
 arguments), `SHUNT_TIMEOUT_SECONDS`, `SHUNT_MIN_LINES`, `SHUNT_ENABLED=0`, and
 `SHUNT_READER_MAX_OUTPUT_TOKENS`/`SHUNT_WRITER_MAX_OUTPUT_TOKENS`. A provider's `command`
 field can also specify its executable path. PATH and common macOS app locations are searched.
+
+## Project memory
+
+The `memory` section is separate from the top-level `enabled` switch, which controls
+read routing only. Memory stays off while the section is absent or `enabled` is false.
+`memory setup` configures enablement, `location` (`plugin-data` or `project`), the
+resolved `data_dir` and the per-store character limits, preserving unrelated settings
+and existing entries. All memory commands are local: no CLI, login or model request.
+`SHUNT_MEMORY_ENABLED=0`, `SHUNT_MEMORY_DATA_DIR` and `SHUNT_MEMORY_LOCK_SECONDS` are
+the supported overrides. See [memory](memory.md) for the schema, storage layout,
+locking, validation, session lifecycle and limitations.
 
 ## Subscription authentication
 

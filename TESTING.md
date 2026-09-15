@@ -6,7 +6,8 @@ expensive parent model with and without Shunt, or measure a subscription quota c
 
 ## What was tested
 
-- **Offline runtime tests:** 38 tests using mocks/fake CLI executables. They cover
+- **Offline runtime tests:** 38 tests using mocks/fake CLI executables at the time of this
+  measurement run; the suite has grown since (project memory added its own tests). They cover
   subscription-auth checks, routing, error handling, budgets, cache, file-write guards
   and the hook JSON protocol. These test behavior, not token savings.
 - **Live tests:** real `claude -p` / `codex exec` workers using saved subscription logins.

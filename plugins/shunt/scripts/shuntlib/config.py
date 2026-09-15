@@ -64,7 +64,8 @@ def load(root, config_path=None):
     except (OSError, ValueError):
         raise ShuntError(f'Cannot read valid JSON configuration: {path}') from None
     allowed = {'provider', 'providers', 'timeout_seconds', 'max_input_bytes', 'min_lines',
-               'cache', 'cache_ttl_seconds', 'cache_max_bytes', 'enabled', 'reader', 'writer'}
+               'cache', 'cache_ttl_seconds', 'cache_max_bytes', 'enabled', 'reader', 'writer',
+               'memory'}
     if not isinstance(data, dict) or set(data) - allowed:
         raise ShuntError('Unknown configuration field; see docs/configuration.md. API configuration is unsupported.')
     if data.get('provider', 'auto') not in PROVIDERS:
@@ -86,7 +87,30 @@ def load(root, config_path=None):
     for key in ('cache', 'enabled'):
         if key in data and not isinstance(data[key], bool):
             raise ShuntError(f'{key} must be a JSON boolean')
+    check_memory(data.get('memory', {}))
     return data
+
+
+def check_memory(section):
+    """Validate the memory section locally: no worker CLI, login check or model request."""
+    if not isinstance(section, dict) or set(section) - {'enabled', 'backend', 'location', 'data_dir', 'limits'}:
+        raise ShuntError('memory supports enabled, backend, location, data_dir and limits')
+    if 'enabled' in section and not isinstance(section['enabled'], bool):
+        raise ShuntError('memory.enabled must be a JSON boolean')
+    if section.get('backend', 'file') != 'file':
+        raise ShuntError('memory.backend supports file only; app-based memory is not implemented')
+    if section.get('location', 'plugin-data') not in ('plugin-data', 'project'):
+        raise ShuntError('memory.location must be plugin-data or project')
+    data_dir = section.get('data_dir')
+    if data_dir is not None and (not isinstance(data_dir, str) or not data_dir.strip()):
+        raise ShuntError('memory.data_dir must be a directory path or null')
+    limits = section.get('limits', {})
+    if not isinstance(limits, dict) or set(limits) - {'memory_chars', 'user_chars'}:
+        raise ShuntError('memory.limits supports memory_chars and user_chars')
+    for key, value in limits.items():
+        if positive(value, f'memory.limits.{key}') > 20000:
+            raise ShuntError(f'memory.limits.{key} must not exceed 20000 characters')
+    return section
 
 
 def find_cli(provider, command=None):

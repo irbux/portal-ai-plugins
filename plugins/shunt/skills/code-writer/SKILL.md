@@ -37,5 +37,9 @@ it. Large output may require a higher writer budget or smaller file-level tasks;
 never concatenate partial generations blindly. No automatic Write hook forces this
 workflow: choose it when reference-based generation actually fits the task.
 
+Workers never receive project memory. A remembered convention can guide which references
+and context files you pass and what the specification says; restate what matters in the
+specification yourself rather than expecting the worker to know it.
+
 For cache status or cleanup use `scripts/shunt.py cache status|prune|clear`.
 See `docs/configuration.md` for provider models, output budgets and cache policy.
