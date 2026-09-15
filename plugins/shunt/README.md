@@ -7,7 +7,7 @@ The `bulk-reader` skill returns focused summaries. The `code-writer` skill write
 complete files directly to disk and returns metadata. `setup` configures per-project
 routing and `doctor` checks configuration, authentication or live model access.
 The optional `file-memory` skill keeps project-scoped preferences, corrections and
-verified lessons in `MEMORY.md` and `USER.md` across sessions.
+verified lessons in `MEMORY.md` and `OPERATOR.md` across sessions.
 
 Default routing matches the main host: Claude uses Haiku; Codex uses gpt-5.6-luna.
 Override the worker with `--provider`, `--model` and `--effort` without changing the

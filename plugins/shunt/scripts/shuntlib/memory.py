@@ -1,4 +1,4 @@
-"""Project-scoped file memory: MEMORY.md and USER.md with locked, atomic writes.
+"""Project-scoped file memory: MEMORY.md and OPERATOR.md with locked, atomic writes.
 
 The Markdown files are authoritative and carry their own per-entry metadata, so a
 failed write cannot leave text and metadata disagreeing. project.json holds identity
@@ -26,15 +26,15 @@ except ImportError:  # pragma: no cover - non-POSIX hosts use the fallback lock
     fcntl = None
 
 STORE_VERSION = 1
-TARGETS = ('memory', 'user')
-DEFAULT_LIMITS = {'memory': 2600, 'user': 1720}
+TARGETS = ('memory', 'operator')
+DEFAULT_LIMITS = {'memory': 2600, 'operator': 1720}
 PLUGIN_ROOT = Path(__file__).resolve().parents[2]
 LOCK_SECONDS = 5.0
 SNAPSHOT_KEEP = 20
 SNAPSHOT_MAX_AGE = 30 * 86400
 
-HEADER_RE = re.compile(r'<!-- shunt-memory v(\d+) target=(memory|user) -->')
-ENTRY_RE = re.compile(r'- ([mu]-[0-9a-f]{6}) #=> (.*)')
+HEADER_RE = re.compile(r'<!-- shunt-memory v(\d+) target=(memory|operator) -->')
+ENTRY_RE = re.compile(r'- ([mo]-[0-9a-f]{6}) #=> (.*)')
 TRAILER_RE = re.compile(r'<!-- shunt created=(\S+) updated=(\S+) source=(\S*) -->')
 INTRO = ('Remembered reference notes for this project, managed by the Shunt file-memory tool.\n'
          'Each entry starts at a bullet with a stable id and the `#=>` delimiter, may continue\n'
@@ -83,7 +83,8 @@ class MemoryConfig:
         self.data_dir = section.get('data_dir')
         limits = section.get('limits', {})
         self.limits = {'memory': positive(limits.get('memory_chars', DEFAULT_LIMITS['memory']), 'memory.limits.memory_chars'),
-                       'user': positive(limits.get('user_chars', DEFAULT_LIMITS['user']), 'memory.limits.user_chars')}
+                       'operator': positive(limits.get('operator_chars', DEFAULT_LIMITS['operator']),
+                                            'memory.limits.operator_chars')}
         self.project_id, self.canonical_path = project_identity(self.root)
 
     def store_dir(self):
@@ -239,7 +240,7 @@ def parse(target, text, ids):
 
 
 def new_id(target, existing):
-    prefix = 'm' if target == 'memory' else 'u'
+    prefix = 'm' if target == 'memory' else 'o'
     while True:
         candidate = f'{prefix}-{os.urandom(3).hex()}'
         if candidate not in existing:
@@ -269,7 +270,7 @@ class Store:
         return path.read_bytes()
 
     def revision(self):
-        return digest(b'shunt-memory-v1\x00' + self.raw('memory') + b'\x00' + self.raw('user'))[:16]
+        return digest(b'shunt-memory-v1\x00' + self.raw('memory') + b'\x00' + self.raw('operator'))[:16]
 
     def decode(self, target, ids):
         raw = self.raw(target)
@@ -278,7 +279,8 @@ class Store:
         try:
             text = raw.decode('utf-8')
         except ValueError:
-            raise MemoryRefusal('malformed_store', f'{target.upper()}.md is not valid UTF-8 text.', target=target) from None
+            raise MemoryRefusal('malformed_store', f'{target.upper()}.md is not valid UTF-8 text.',
+                                target=target) from None
         return parse(target, text, ids)
 
     def view(self):

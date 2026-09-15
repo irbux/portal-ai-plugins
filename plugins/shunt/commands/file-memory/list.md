@@ -1,6 +1,6 @@
 ---
 description: List current Shunt memory entries with ids, provenance and revisions
-argument-hint: "[memory|user] [--limit N] [--offset N]"
+argument-hint: "[memory|operator] [--limit N] [--offset N]"
 ---
 
 Use the shunt file-memory skill. Run `memory list --root "$PWD"`, adding `--target`,

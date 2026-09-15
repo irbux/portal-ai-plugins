@@ -1,10 +1,10 @@
 ---
-description: Add one entry to the Shunt MEMORY memory store
+description: Add one entry to the Shunt OPERATOR memory store
 argument-hint: "<entry text>"
 ---
 
-Use the shunt file-memory skill. Save the fact in $ARGUMENTS to the memory store
-with `memory add --root "$PWD" --target memory`, passing the JSON payload on stdin
+Use the shunt file-memory skill. Save the fact in $ARGUMENTS to the operator store
+with `memory add --root "$PWD" --target operator`, passing the JSON payload on stdin
 through a quoted heredoc or `--payload-file`; never interpolate the text into the
 command line. Set `source` to compact provenance such as operator-statement,
 operator-request, operator-correction or verified:path:lines. Keep the entry specific and

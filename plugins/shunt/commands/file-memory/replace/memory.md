@@ -8,4 +8,4 @@ with a JSON payload on stdin holding `text` and either `id` or `old_text`.
 `old_text` must match exactly one complete entry; an ambiguous or missing match
 changes nothing. Read the entry first and pass `expect_revision` from that read, and
 on `stale_revision` re-read and reconsider before a single bounded retry. Replace for
-a verified correction or an explicit user request, not to free capacity.
+a verified correction or an explicit operator request, not to free capacity.

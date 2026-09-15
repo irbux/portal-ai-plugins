@@ -2,7 +2,7 @@
 description: Clear the Shunt MEMORY store and invalidate its session snapshots
 ---
 
-Use the shunt file-memory skill. Show the user the current memory entries from
+Use the shunt file-memory skill. Show the operator the current memory entries from
 `memory list --root "$PWD" --target memory` and confirm before running
 `memory clear --root "$PWD" --target memory --confirm`. This removes every memory
 entry and invalidates plugin-managed snapshots so erased entries are not restored

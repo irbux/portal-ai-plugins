@@ -105,8 +105,8 @@ def check_memory(section):
     if data_dir is not None and (not isinstance(data_dir, str) or not data_dir.strip()):
         raise ShuntError('memory.data_dir must be a directory path or null')
     limits = section.get('limits', {})
-    if not isinstance(limits, dict) or set(limits) - {'memory_chars', 'user_chars'}:
-        raise ShuntError('memory.limits supports memory_chars and user_chars')
+    if not isinstance(limits, dict) or set(limits) - {'memory_chars', 'operator_chars'}:
+        raise ShuntError('memory.limits supports memory_chars and operator_chars')
     for key, value in limits.items():
         if positive(value, f'memory.limits.{key}') > 20000:
             raise ShuntError(f'memory.limits.{key} must not exceed 20000 characters')
