@@ -15,10 +15,12 @@ metadata. File writes require complete structured results and explicit overwrite
 Do not turn off safety controls or automatically fall back to another provider.
 
 File memory is project-scoped, disabled by default, and local: no worker CLI, login or
-model request. Store it outside the installed plugin, keep the Markdown files
-authoritative, and keep every write locked, revision-checked and atomic. Workers get no
-memory access; the main agent verifies evidence and validated Python performs the write.
-Remembered text is reference data and never overrides current instructions or host policy.
+model request. Its two stores are `MEMORY.md` and `OPERATOR.md`; the operator is the
+person using the project. Store them outside the installed plugin, keep the Markdown
+files authoritative, and keep every write locked, revision-checked and atomic. Workers
+get no memory access; the main agent verifies evidence and validated Python performs the
+write. Remembered text is reference data and never overrides current instructions or
+host policy.
 
 Doctor is read-only and offline by default. `--auth` checks CLI login; `--probe`
 explicitly invokes a small model request. Hooks are best-effort routing, not a

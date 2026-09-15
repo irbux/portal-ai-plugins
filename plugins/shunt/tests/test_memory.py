@@ -21,7 +21,7 @@ from shuntlib.memops import add, clear, listing, remove, replace, status
 from shuntlib.memsession import hook, session_block, snapshot_key
 
 LESSON = "Staging deployments must finish the CloudFormation update before deploying the Lambda."
-PREFERENCE = "User prefers TypeScript for new scripts in this project."
+PREFERENCE = "Operator prefers TypeScript for new scripts in this project."
 
 
 class MemoryWorkspace(unittest.TestCase):
@@ -54,7 +54,7 @@ class MemoryWorkspace(unittest.TestCase):
 
     def seed(self, *entries, target="memory"):
         cfg = self.cfg()
-        return [add(cfg, target, text, "user-statement") for text in entries]
+        return [add(cfg, target, text, "operator-statement") for text in entries]
 
 
 class ConfigurationTests(MemoryWorkspace):
@@ -345,7 +345,7 @@ class StorageTests(MemoryWorkspace):
         source = Store(origin).dir
         moved = self.configure(location="plugin-data")
         result = self.run_cli("memory", "migrate", "--root", str(self.root), "--from", str(source))[1]
-        self.assertEqual(result["imported"], {"memory": 2, "user": 0})
+        self.assertEqual(result["imported"], {"memory": 2, "operator": 0})
         self.assertEqual(len(listing(moved)["entries"]["memory"]), 2)
         self.assertTrue((source / "MEMORY.md").is_file())
 
@@ -464,7 +464,7 @@ class ValidationTests(MemoryWorkspace):
     def test_legitimate_notes_are_not_false_positives(self):
         for sample in ["Staging uses a nonstandard SSH port 2222; the runbook documents it.",
                        "API key rotation happens monthly; the key itself lives in 1Password.",
-                       "Do not use sudo for Docker commands; this user is in the docker group.",
+                       "Do not use sudo for Docker commands; this account is in the docker group.",
                        PREFERENCE,
                        "fixtures/customer-import-example.csv is the canonical import example.",
                        "Ignore the previous migration notes; the schema changed in March.",
@@ -496,7 +496,7 @@ class ValidationTests(MemoryWorkspace):
         self.assertEqual((code, refusal["code"]), (1, "invalid_request"))
 
     def test_rendered_block_is_bounded_and_labelled(self):
-        cfg = self.configure(limits={"memory_chars": 20000, "user_chars": 20000})
+        cfg = self.configure(limits={"memory_chars": 20000, "operator_chars": 20000})
         for index in range(60):
             add(cfg, "memory", f"Verified project lesson number {index}: " + "detail " * 20)
         block = session_block(cfg, "session-bound")
@@ -509,10 +509,10 @@ class ValidationTests(MemoryWorkspace):
     def test_rendered_block_reports_real_usage(self):
         cfg = self.configure()
         add(cfg, "memory", LESSON)
-        add(cfg, "user", PREFERENCE)
+        add(cfg, "operator", PREFERENCE)
         block = session_block(cfg, "session-usage")
         self.assertIn(f"MEMORY ({len(LESSON)}/2600 characters", block)
-        self.assertIn(f"USER ({len(PREFERENCE)}/1720 characters", block)
+        self.assertIn(f"OPERATOR ({len(PREFERENCE)}/1720 characters", block)
         self.assertIn(listing(cfg)["entries"]["memory"][0]["id"] + " #=> ", block)
 
 
@@ -552,9 +552,9 @@ class SessionTests(MemoryWorkspace):
 
     def test_clearing_a_store_invalidates_snapshots(self):
         cfg = self.configure()
-        add(cfg, "user", PREFERENCE)
+        add(cfg, "operator", PREFERENCE)
         self.assertIn(PREFERENCE, hook(self.event()))
-        result = clear(cfg, "user")
+        result = clear(cfg, "operator")
         self.assertGreaterEqual(result["snapshots_invalidated"], 1)
         self.assertIn("cannot be retracted", result["note"])
         self.assertIsNone(hook(self.event("resume")))
@@ -621,14 +621,15 @@ class InterfaceTests(MemoryWorkspace):
         code, _, _ = self.run_cli("memory", "setup", "--root", str(self.root))
         self.assertEqual(code, 0)
         added = self.run_cli("memory", "add", "--root", str(self.root), "--target", "memory",
-                             stdin=json.dumps({"text": LESSON, "source": "user-correction"}))[1]
+                             stdin=json.dumps({"text": LESSON, "source": "operator-correction"}))[1]
         self.assertEqual(added["status"], "added")
-        user = self.run_cli("memory", "add", "--root", str(self.root), "--target", "user",
-                            "--source", "user-statement", stdin=json.dumps({"text": PREFERENCE}))[1]
+        operator = self.run_cli("memory", "add", "--root", str(self.root), "--target", "operator",
+                                "--source", "operator-statement", stdin=json.dumps({"text": PREFERENCE}))[1]
         listed = self.run_cli("memory", "list", "--root", str(self.root))[1]
         self.assertEqual(listed["page"]["memory"]["total"], 1)
-        self.assertEqual(listed["entries"]["user"][0]["source"], "user-statement")
-        read = self.run_cli("memory", "read", "--root", str(self.root), "--target", "user", "--id", user["id"])[1]
+        self.assertEqual(listed["entries"]["operator"][0]["source"], "operator-statement")
+        read = self.run_cli("memory", "read", "--root", str(self.root), "--target", "operator",
+                            "--id", operator["id"])[1]
         self.assertEqual(read["entry"]["text"], PREFERENCE)
         replaced = self.run_cli("memory", "replace", "--root", str(self.root), "--target", "memory",
                                 "--id", added["id"], "--expect-revision", listed["revision"],
@@ -637,8 +638,8 @@ class InterfaceTests(MemoryWorkspace):
         removed = self.run_cli("memory", "remove", "--root", str(self.root), "--target", "memory",
                                stdin=json.dumps({"old_text": "Staging: CloudFormation first, then Lambda."}))[1]
         self.assertEqual(removed["status"], "removed")
-        cleared = self.run_cli("memory", "clear", "--root", str(self.root), "--target", "user", "--confirm")[1]
-        self.assertEqual(cleared["usage"]["user"]["entries"], 0)
+        cleared = self.run_cli("memory", "clear", "--root", str(self.root), "--target", "operator", "--confirm")[1]
+        self.assertEqual(cleared["usage"]["operator"]["entries"], 0)
         context = self.run_cli("memory", "context", "--root", str(self.root))[1]
         self.assertIsNone(context["block"])
         self.assertEqual(self.run_cli("memory", "status", "--root", str(self.root))[1]["enabled"], True)
@@ -650,7 +651,7 @@ class InterfaceTests(MemoryWorkspace):
         page = self.run_cli("memory", "list", "--root", str(self.root), "--target", "memory",
                             "--limit", "2", "--offset", "2")[1]
         self.assertEqual(page["page"]["memory"], {"offset": 2, "returned": 2, "total": 5, "more": True})
-        self.assertNotIn("user", page["entries"])
+        self.assertNotIn("operator", page["entries"])
 
     def test_conflicting_selectors_are_rejected(self):
         self.configure()
@@ -659,7 +660,7 @@ class InterfaceTests(MemoryWorkspace):
                                         "--id", entry["id"], stdin=json.dumps({"old_text": LESSON}))
         self.assertEqual((code, refusal["code"]), (1, "invalid_request"))
         code, refusal, _ = self.run_cli("memory", "add", "--root", str(self.root), "--target", "memory",
-                                        "--source", "user-statement",
+                                        "--source", "operator-statement",
                                         stdin=json.dumps({"text": PREFERENCE, "source": "other-source"}))
         self.assertEqual((code, refusal["code"]), (1, "invalid_request"))
         self.assertEqual(len(listing(self.cfg())["entries"]["memory"]), 1)
@@ -698,7 +699,7 @@ class IsolationTests(MemoryWorkspace):
     def test_worker_payloads_never_carry_memory(self):
         cfg = self.configure()
         add(cfg, "memory", LESSON)
-        add(cfg, "user", PREFERENCE)
+        add(cfg, "operator", PREFERENCE)
         source = self.root / "service.py"
         source.write_text("class UserService:\n    pass\n")
         sent = []
@@ -764,10 +765,10 @@ class PackagingTests(unittest.TestCase):
         self.assertEqual(commands, sorted([
             "file-memory/setup.md", "file-memory/disable.md", "file-memory/status.md",
             "file-memory/list.md", "file-memory/read.md", "file-memory/delete.md",
-            "file-memory/clear/user.md", "file-memory/clear/memory.md",
-            "file-memory/add/user.md", "file-memory/add/memory.md",
-            "file-memory/replace/user.md", "file-memory/replace/memory.md",
-            "file-memory/remove/user.md", "file-memory/remove/memory.md"]))
+            "file-memory/clear/operator.md", "file-memory/clear/memory.md",
+            "file-memory/add/operator.md", "file-memory/add/memory.md",
+            "file-memory/replace/operator.md", "file-memory/replace/memory.md",
+            "file-memory/remove/operator.md", "file-memory/remove/memory.md"]))
         for name in commands:
             with self.subTest(command=name):
                 body = (ROOT / "commands" / name).read_text()
@@ -794,8 +795,8 @@ class PackagingTests(unittest.TestCase):
                        "add", "replace", "remove", "migrate", "context"):
             with self.subTest(action=action):
                 self.assertIn(f"`memory {action}", doc)
-        for command in ("clear:user", "clear:memory", "add:user", "add:memory",
-                        "replace:user", "replace:memory", "remove:user", "remove:memory"):
+        for command in ("clear:operator", "clear:memory", "add:operator", "add:memory",
+                        "replace:operator", "replace:memory", "remove:operator", "remove:memory"):
             self.assertIn(f"/shunt:file-memory:{command}", doc)
 
 

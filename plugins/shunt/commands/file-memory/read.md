@@ -1,6 +1,6 @@
 ---
 description: Read one current Shunt memory entry by target and id
-argument-hint: "memory|user <entry-id>"
+argument-hint: "memory|operator <entry-id>"
 ---
 
 Use the shunt file-memory skill. Run `memory read --root "$PWD" --target T --id ID`

@@ -49,7 +49,7 @@ or guarantee about how subscription allowances are charged.
 
 Project memory is a separate local path with no worker involvement. The main agent
 requests an explicit memory operation; validated Python performs a locked, atomic write
-to `MEMORY.md` or `USER.md` outside the installed plugin. Workers never receive memory
+to `MEMORY.md` or `OPERATOR.md` outside the installed plugin. Workers never receive memory
 files or write tools, and a worker summary is a lead the main agent verifies before
 saving. A `SessionStart` hook renders a bounded, labelled block of remembered reference
 notes through the host's supported context mechanism; a failure there is silent and the

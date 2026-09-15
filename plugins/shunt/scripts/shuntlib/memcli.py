@@ -79,7 +79,7 @@ def selection(args, data, require_text):
 def target_of(args, data):
     target = data.get('target') or getattr(args, 'target', None)
     if target not in TARGETS:
-        raise MemoryRefusal('invalid_request', 'target must be memory or user.')
+        raise MemoryRefusal('invalid_request', 'target must be memory or operator.')
     return target
 
 
@@ -123,8 +123,8 @@ def run_setup(args):
     limits = dict(cfg.data.get('memory', {}).get('limits', {}))
     if args.memory_chars:
         limits['memory_chars'] = args.memory_chars
-    if args.user_chars:
-        limits['user_chars'] = args.user_chars
+    if args.operator_chars:
+        limits['operator_chars'] = args.operator_chars
     if limits:
         section['limits'] = limits
     candidate = MemoryConfig(cfg.root, args.config, data={**cfg.data, 'memory': {**cfg.data.get('memory', {}), **section}})
@@ -144,7 +144,7 @@ def run_setup(args):
     result = {'success': True, 'status': 'configured', 'config': str(path), 'memory': merged,
               'store': str(destination), 'project': candidate.project_id,
               'limits': candidate.limits,
-              'note': 'Memory is project-scoped. USER.md holds preferences for this project only and does not '
+              'note': 'Memory is project-scoped. OPERATOR.md holds preferences for this project only and does not '
                       'propagate to other projects. Saving is agent judgment; Python enforces structure and limits.'}
     updated = MemoryConfig(cfg.root, args.config)
     Store(updated).identity()
@@ -248,7 +248,7 @@ def add_parser(sub):
     setup.add_argument('--location', choices=('plugin-data', 'project'))
     setup.add_argument('--data-dir', help='Explicit persistent data directory for plugin-data storage')
     setup.add_argument('--memory-chars', type=int, help=f'MEMORY limit (default {DEFAULT_LIMITS["memory"]})')
-    setup.add_argument('--user-chars', type=int, help=f'USER limit (default {DEFAULT_LIMITS["user"]})')
+    setup.add_argument('--operator-chars', type=int, help=f'OPERATOR limit (default {DEFAULT_LIMITS["operator"]})')
     setup.add_argument('--migrate', action='store_true', help='Copy existing entries into a new location')
     setup.add_argument('--keep', action='store_true', help='Switch location and leave existing entries in place')
     setup.set_defaults(run=run_setup)
@@ -271,7 +271,7 @@ def add_parser(sub):
         parser = actions.add_parser(name, parents=[base], help=f'{name.capitalize()} an entry; payload is JSON on stdin')
         parser.add_argument('--target', choices=TARGETS, required=need_target)
         parser.add_argument('--id')
-        parser.add_argument('--source', help='Compact provenance token, for example user-statement')
+        parser.add_argument('--source', help='Compact provenance token, for example operator-statement')
         parser.add_argument('--expect-revision')
         parser.add_argument('--payload-file', help='Read the JSON payload from a file instead of stdin')
         parser.set_defaults(run=runner)

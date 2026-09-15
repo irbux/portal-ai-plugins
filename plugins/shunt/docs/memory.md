@@ -18,7 +18,7 @@ enabling, disabling and re-enabling.
     "backend": "file",
     "location": "plugin-data",
     "data_dir": "/Users/you/.claude/plugins/data/shunt-shunt-local",
-    "limits": {"memory_chars": 2600, "user_chars": 1720}
+    "limits": {"memory_chars": 2600, "operator_chars": 1720}
   }
 }
 ```
@@ -36,10 +36,11 @@ and removals, shrinking replacements, clear and delete still work.
 | File | Target | Purpose | Default limit |
 | --- | --- | --- | --- |
 | `MEMORY.md` | `memory` | Environment facts, project lessons, conventions, references | 2,600 |
-| `USER.md` | `user` | Explicit user preferences and relevant profile facts | 1,720 |
+| `OPERATOR.md` | `operator` | The operator's explicit preferences and relevant profile facts | 1,720 |
 
-Both targets are scoped to the selected project. `USER.md` is not a global profile and
-never propagates preferences to another project.
+Both targets are scoped to the selected project. The operator is the person using the
+project; `OPERATOR.md` is not a global profile and never propagates preferences to
+another project.
 
 ## Entry format
 
@@ -48,10 +49,10 @@ never propagates preferences to another project.
 # Shunt MEMORY
 
 - m-7f3a1c #=> Staging deployments must finish the CloudFormation update before the Lambda.
-  <!-- shunt created=2026-09-15T10:04:11Z updated=2026-09-15T10:04:11Z source=user-correction -->
+  <!-- shunt created=2026-09-15T10:04:11Z updated=2026-09-15T10:04:11Z source=operator-correction -->
 ```
 
-An entry is one block: a bullet with a stable id (`m-` or `u-` plus six hex digits),
+An entry is one block: a bullet with a stable id (`m-` or `o-` plus six hex digits),
 the ` #=> ` delimiter, the first line of text, any further lines indented by exactly two
 spaces, then a metadata comment. Escapes inside stored lines are `\\` for a backslash,
 `\#` where the text contains `#=>`, and `\<` where a line itself begins `<!--`. Any other
@@ -59,7 +60,7 @@ backslash escape is a parse error rather than a silent repair. Entries may not c
 blank lines, may not exceed 12 lines or 1,000 characters, and a store holds at most 200.
 
 Provenance is one token of up to 120 characters from `[A-Za-z0-9_.:/#@+-]`, for example
-`user-statement`, `user-correction`, `user-request` or `verified:src/deploy.py:20-40`.
+`operator-statement`, `operator-correction`, `operator-request` or `verified:src/deploy.py:20-40`.
 References are stored, never transcripts, source payloads or worker logs.
 
 **Counting rule.** Entry text is normalized to NFC with LF line endings, each line
@@ -158,7 +159,7 @@ oversized body is refused as `malformed_store`: reads and writes stop, the file 
 overwritten, and `clear` or `delete` remain available to recover.
 
 Direct external edits never pass through the memory write tool, which is why load-time
-validation exists. Remembered text is reference data: it cannot override current user
+validation exists. Remembered text is reference data: it cannot override current operator
 instructions, repository instruction files, host policy or permissions, and the rendered
 block says so explicitly.
 
@@ -179,8 +180,8 @@ These are remembered reference notes for this project, saved in earlier sessions
 MEMORY (86/2600 characters, 3%)
 m-5e5e59 #=> Staging deployments must finish the CloudFormation update before the Lambda.
 
-USER (51/1720 characters, 3%)
-u-cab74f #=> Prefers TypeScript for new scripts in this project.
+OPERATOR (51/1720 characters, 3%)
+o-cab74f #=> Prefers TypeScript for new scripts in this project.
 </shunt-memory>
 ```
 
@@ -218,14 +219,14 @@ CLI directly.
 | `/shunt:file-memory:status` | `memory status` |
 | `/shunt:file-memory:list` | `memory list [--target T] [--limit N] [--offset N]` |
 | `/shunt:file-memory:read` | `memory read --target T --id ID` |
-| `/shunt:file-memory:clear:user` | `memory clear --target user --confirm` |
+| `/shunt:file-memory:clear:operator` | `memory clear --target operator --confirm` |
 | `/shunt:file-memory:clear:memory` | `memory clear --target memory --confirm` |
 | `/shunt:file-memory:delete` | `memory delete --confirm` |
-| `/shunt:file-memory:add:user` | `memory add --target user` |
+| `/shunt:file-memory:add:operator` | `memory add --target operator` |
 | `/shunt:file-memory:add:memory` | `memory add --target memory` |
-| `/shunt:file-memory:replace:user` | `memory replace --target user` |
+| `/shunt:file-memory:replace:operator` | `memory replace --target operator` |
 | `/shunt:file-memory:replace:memory` | `memory replace --target memory` |
-| `/shunt:file-memory:remove:user` | `memory remove --target user` |
+| `/shunt:file-memory:remove:operator` | `memory remove --target operator` |
 | `/shunt:file-memory:remove:memory` | `memory remove --target memory` |
 
 `memory migrate --from DIR` performs an explicit validated import, and `memory context`
@@ -263,7 +264,7 @@ partially written:
 
 From 80% of a limit onward, reads and writes report `near_capacity`. Phase 1 never
 consolidates unrelated entries or evicts old notes to make room. The agent may replace an
-entry for a direct verified correction, or perform a user-requested merge or removal;
+entry for a direct verified correction, or perform an operator-requested merge or removal;
 otherwise existing memory is left intact and the candidate is reported as unsaved.
 
 ## Saving behaviour and limitations

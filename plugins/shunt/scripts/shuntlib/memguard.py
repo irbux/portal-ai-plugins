@@ -148,7 +148,7 @@ def validate_source(source):
     if not SOURCE_RE.fullmatch(source):
         raise MemoryRefusal('invalid_source',
                             'Provenance must be one token of up to 120 characters from [A-Za-z0-9_.:/#@+-], '
-                            'for example user-statement, user-correction or verified:path/to/file.py:20-40.')
+                            'for example operator-statement, operator-correction or verified:path/to/file.py:20-40.')
     return source
 
 
