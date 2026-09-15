@@ -16,6 +16,10 @@ If authentication is missing, tell the user to run `claude auth login` or `codex
 in their terminal. Do not read auth files, request tokens, or configure an API key.
 A denied keychain/network access check may require the host's normal permission flow.
 
+Project memory is configured separately and stays disabled until asked for. Use
+`memory setup` from the file-memory skill, not this workflow, and never enable memory
+for a project the user did not ask about. Memory needs no CLI, login or model request.
+
 Read `docs/configuration.md` for CLI paths, model overrides, cache and output limits.
 Add `.shunt/` to the project's ignore file if needed. `.shunt.json` contains no credentials
 and may be committed. Hooks need host trust; never bypass trust or approval policies.

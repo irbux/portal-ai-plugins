@@ -1,7 +1,7 @@
 {
   "name": "shunt",
-  "version": "0.3.0",
-  "description": "Delegate large reads and file generation to local Claude Code or Codex subscription workers.",
+  "version": "0.4.0",
+  "description": "Delegate large reads and file generation to local Claude Code or Codex subscription workers, with project-scoped file memory.",
   "author": {
     "name": "Shunt contributors"
   },
@@ -10,8 +10,10 @@
   "keywords": [
     "bulk-reader",
     "code-writer",
+    "file-memory",
     "subscription",
     "model-routing"
   ],
-  "skills": "./skills/"
+  "skills": "./skills/",
+  "commands": "./commands/"
 }

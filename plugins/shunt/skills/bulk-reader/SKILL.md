@@ -36,5 +36,9 @@ If the worker is unconfigured, use this plugin's setup workflow. Small, bounded
 reads remain available. A hook redirect is a routing suggestion with a blocked
 call, not a claim that every possible read route is intercepted.
 
+Workers never receive project memory and cannot write it. When a verified finding from
+this workflow is durable and useful later, save it with the file-memory skill using
+`source=verified:path:lines` after checking the original excerpt, not from the summary alone.
+
 For cache status or cleanup use `scripts/shunt.py cache status|prune|clear`.
 See `docs/configuration.md` for provider models, output budgets and cache policy.
